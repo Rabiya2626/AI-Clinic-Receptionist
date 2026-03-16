@@ -1,0 +1,484 @@
+{
+  "name": "Clinic Patient Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "clinic-agent",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f67e33ae-7e1d-4fe8-8230-672a71339272",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        -640,
+        192
+      ],
+      "webhookId": "f464eaf9-e916-4aff-a3bf-583fa525105f"
+    },
+    {
+      "parameters": {
+        "dataType": "string",
+        "value1": "={{$json.body.name}}",
+        "rules": {
+          "rules": [
+            {
+              "value2": "check_patient_details",
+              "outputKey": "check_patient"
+            },
+            {
+              "value2": "book_appointment",
+              "outputKey": "book_appointment"
+            }
+          ]
+        }
+      },
+      "id": "d4fea9c7-faac-45a6-bbbf-5e3826ff1b25",
+      "name": "Switch Function",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 2,
+      "position": [
+        -464,
+        192
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "patient_name",
+              "value": "={{$json.body.args.patient_name}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "283d6a13-7378-4ef9-9633-cafdf0b1b8cd",
+      "name": "Set Patient Name",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1uibZS1pFhmpfAvz8R9Zfo4WnK27VrWwr0O6-bIvm_Jw",
+          "mode": "list",
+          "cachedResultName": "Patient Inquiry Form (Responses)",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uibZS1pFhmpfAvz8R9Zfo4WnK27VrWwr0O6-bIvm_Jw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 170447336,
+          "mode": "list",
+          "cachedResultName": "Form Responses 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1uibZS1pFhmpfAvz8R9Zfo4WnK27VrWwr0O6-bIvm_Jw/edit#gid=170447336"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Full Name",
+              "lookupValue": "={{$json.patient_name}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "78893659-e6cc-4cd7-b6dc-eed79cce57a5",
+      "name": "Get Patients",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4,
+      "position": [
+        -48,
+        48
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gMb6I67oXPbv2EwO",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"result\": {\n    \"name\": \"{{$json['Full Name']}}\",\n    \"phone\": \"{{$json['Phone Number']}}\",\n    \"email\": \"{{$json['Email Address']}}\",\n    \"treatment\": \"{{$json['What treatment are you interested in?']}}\"\n  }\n}",
+        "options": {}
+      },
+      "id": "cdd9c337-e36e-4de1-ade1-9e4f08a38e0a",
+      "name": "Respond Patient Details",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        176,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "values": {
+          "string": [
+            {
+              "name": "patient_name",
+              "value": "={{$json.body.args.patient_name}}"
+            },
+            {
+              "name": "email",
+              "value": "={{$json.body.args.email}}"
+            },
+            {
+              "name": "phone",
+              "value": "={{$json.body.args.phone}}"
+            },
+            {
+              "name": "treatment",
+              "value": "={{$json.body.args.treatment}}"
+            },
+            {
+              "name": "appointment_time",
+              "value": "=={{$json.body.args.appointment_time}}"
+            },
+            {
+              "name": "appointment_datetime",
+              "value": "=={{ $moment($json.body.args.appointment_date + \" \" + $json.body.args.appointment_time, \"YYYY-MM-DD h A\").toISOString() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "834389fc-04fa-4d49-ae51-09e6366769fe",
+      "name": "Set Booking Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        352
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\"status\":\"success\",\"message\":\"Appointment booked successfully\"}",
+        "options": {}
+      },
+      "id": "61a3c750-2b46-4eec-b8f8-661626e093c0",
+      "name": "Respond Booking",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [
+        32,
+        352
+      ]
+    }
+  ],
+  "pinData": {
+    "Webhook": [
+      {
+        "json": {
+          "headers": {
+            "host": "freelancingrabs.app.n8n.cloud",
+            "user-agent": "axios/1.13.2",
+            "content-length": "2724",
+            "accept": "application/json, text/plain, */*",
+            "accept-encoding": "gzip, br",
+            "cdn-loop": "cloudflare; loops=1; subreqs=1",
+            "cf-connecting-ip": "100.20.5.228",
+            "cf-ew-via": "15",
+            "cf-ipcountry": "US",
+            "cf-ray": "9db988611e4fb8b9-PDX",
+            "cf-visitor": "{\"scheme\":\"https\"}",
+            "cf-worker": "n8n.cloud",
+            "content-type": "application/json",
+            "x-forwarded-for": "100.20.5.228, 172.68.174.200",
+            "x-forwarded-host": "freelancingrabs.app.n8n.cloud",
+            "x-forwarded-port": "443",
+            "x-forwarded-proto": "https",
+            "x-forwarded-server": "traefik-prod-users-gwc-113-7f587957c7-66v42",
+            "x-is-trusted": "yes",
+            "x-real-ip": "100.20.5.228",
+            "x-retell-signature": "v=1773389117460,d=53f272a5ada1231b0040e5637f098ce91e488c20401ded883f3cc3d7362fb485"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "call": {
+              "call_id": "call_4bcc598279f4cba12c0877230c1",
+              "call_type": "web_call",
+              "agent_id": "agent_d4c63bb66a0935ebddc7826d82",
+              "agent_version": 0,
+              "agent_name": "Clinic Patient Assistant",
+              "call_status": "ongoing",
+              "start_timestamp": 1773389109593,
+              "transcript": "Agent: Hello, welcome to Smile Dental Clinic. May I know your name?\nUser: Rina. \n",
+              "transcript_object": [
+                {
+                  "role": "agent",
+                  "content": "Hello, welcome to Smile Dental Clinic. May I know your name?",
+                  "words": [
+                    {
+                      "word": "Hello, ",
+                      "start": 0.824,
+                      "end": 1.224
+                    },
+                    {
+                      "word": "welcome ",
+                      "start": 1.224,
+                      "end": 1.624
+                    },
+                    {
+                      "word": "to ",
+                      "start": 1.624,
+                      "end": 2.024
+                    },
+                    {
+                      "word": "Smile ",
+                      "start": 2.024,
+                      "end": 2.424
+                    },
+                    {
+                      "word": "Dental ",
+                      "start": 2.424,
+                      "end": 2.824
+                    },
+                    {
+                      "word": "Clinic.",
+                      "start": 2.824,
+                      "end": 3.224
+                    },
+                    {
+                      "word": " May ",
+                      "start": 4.295375,
+                      "end": 4.695375
+                    },
+                    {
+                      "word": "I ",
+                      "start": 4.695375,
+                      "end": 5.095375
+                    },
+                    {
+                      "word": "know ",
+                      "start": 4.986708251953125,
+                      "end": 5.386708251953125
+                    },
+                    {
+                      "word": "your ",
+                      "start": 4.986708251953125,
+                      "end": 5.386708251953125
+                    },
+                    {
+                      "word": "name?",
+                      "start": 4.986708251953125,
+                      "end": 5.386708251953125
+                    }
+                  ],
+                  "metadata": {
+                    "response_id": 0
+                  }
+                },
+                {
+                  "role": "user",
+                  "content": "Rina. ",
+                  "words": [
+                    {
+                      "word": "Rina. ",
+                      "start": 6.534,
+                      "end": 7.013999999999999
+                    }
+                  ]
+                }
+              ],
+              "transcript_with_tool_calls": [
+                {
+                  "role": "agent",
+                  "content": "Hello, welcome to Smile Dental Clinic. May I know your name?",
+                  "words": [
+                    {
+                      "word": "Hello, ",
+                      "start": 0.824,
+                      "end": 1.224
+                    },
+                    {
+                      "word": "welcome ",
+                      "start": 1.224,
+                      "end": 1.624
+                    },
+                    {
+                      "word": "to ",
+                      "start": 1.624,
+                      "end": 2.024
+                    },
+                    {
+                      "word": "Smile ",
+                      "start": 2.024,
+                      "end": 2.424
+                    },
+                    {
+                      "word": "Dental ",
+                      "start": 2.424,
+                      "end": 2.824
+                    },
+                    {
+                      "word": "Clinic.",
+                      "start": 2.824,
+                      "end": 3.224
+                    },
+                    {
+                      "word": " May ",
+                      "start": 4.295375,
+                      "end": 4.695375
+                    },
+                    {
+                      "word": "I ",
+                      "start": 4.695375,
+                      "end": 5.095375
+                    },
+                    {
+                      "word": "know ",
+                      "start": 4.986708251953125,
+                      "end": 5.386708251953125
+                    },
+                    {
+                      "word": "your ",
+                      "start": 4.986708251953125,
+                      "end": 5.386708251953125
+                    },
+                    {
+                      "word": "name?",
+                      "start": 4.986708251953125,
+                      "end": 5.386708251953125
+                    }
+                  ],
+                  "metadata": {
+                    "response_id": 0
+                  }
+                },
+                {
+                  "role": "user",
+                  "content": "Rina. ",
+                  "words": [
+                    {
+                      "word": "Rina. ",
+                      "start": 6.534,
+                      "end": 7.013999999999999
+                    }
+                  ]
+                },
+                {
+                  "role": "tool_call_invocation",
+                  "tool_call_id": "42e8a71e62ae1247",
+                  "name": "check_patient_details",
+                  "arguments": "{\"patient_name\":\"Rina\",\"execution_message\":\"Let me check your details in our system.\"}",
+                  "time_sec": 7.866,
+                  "type": "custom"
+                }
+              ],
+              "latency": {},
+              "call_cost": {
+                "product_costs": [],
+                "total_duration_unit_price": 0,
+                "total_duration_seconds": 0,
+                "combined_cost": 0
+              },
+              "data_storage_setting": "everything",
+              "opt_in_signed_url": false,
+              "access_token": "eyJhbGciOiJIUzI1NiJ9.eyJ2aWRlbyI6eyJyb29tSm9pbiI6dHJ1ZSwicm9vbSI6IndlYl9jYWxsXzRiY2M1OTgyNzlmNGNiYTEyYzA4NzcyMzBjMSJ9LCJpc3MiOiJBUEl3UkNGdVBCYXdtMmgiLCJleHAiOjE3NzMzODk3MDgsIm5iZiI6MCwic3ViIjoiY2xpZW50In0.52F27EvALKMGCMtQ5_fUOw5I0eMu2iW-zHWPzKFrsV0"
+            },
+            "name": "check_patient_details",
+            "args": {
+              "patient_name": "Rina"
+            }
+          },
+          "webhookUrl": "https://freelancingrabs.app.n8n.cloud/webhook/clinic-agent",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Switch Function",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Patient Name": {
+      "main": [
+        [
+          {
+            "node": "Get Patients",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Patients": {
+      "main": [
+        [
+          {
+            "node": "Respond Patient Details",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Booking Data": {
+      "main": [
+        [
+          {
+            "node": "Respond Booking",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch Function": {
+      "main": [
+        [
+          {
+            "node": "Set Patient Name",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Set Booking Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "availableInMCP": false
+  },
+  "versionId": "42a7d188-00ab-46af-8b6d-80d06af4a166",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ef9776a11d5e231eceb118378d8bad96ab6418f1e4c06ce094693b94531e4796"
+  },
+  "id": "MzW6pOQ3zkfG5J27",
+  "tags": []
+}
